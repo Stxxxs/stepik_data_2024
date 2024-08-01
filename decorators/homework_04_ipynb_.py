@@ -31,7 +31,7 @@ def benchmark(func):
         result = func(*args, **kwargs)
         end = time.perf_counter()
         print(f'Время выполнения функции {func.__name__} {end - start:.6f} секунд')
-
+        return result
     return wrapper
 
 """## Задание 2"""
@@ -43,7 +43,8 @@ def logging(func):
 
     def wrapper(*args, **kwargs):
         print(f'Функция {func.__name__} вызвана с параметрами: {args} и {kwargs}')
-
+        result = func(*args, **kwargs)
+        return result
     return wrapper
 
 """## Задание 3"""
@@ -57,6 +58,8 @@ def counter(func):
         if (func):
             wrapper.count += 1
             print(f"Функция была вызвана: {wrapper.count} раз")
+        result = func(*args, **kwargs)
+        return result
 
     wrapper.count = 0
     return wrapper
@@ -70,7 +73,11 @@ def memo(func):
   cache = {}
 
   def fmemo(*args):
-    cache[args] = func(*args)
+    if args in cache:
+       return cache[args]
+    else:
+        cache[args] = func(*args)
+    return cache[args]
 
   fmemo.cache = cache
   return fmemo
@@ -89,7 +96,7 @@ def word_count(word, url=BOOK_PATH):
     raw = requests.get(url).text
 
     # заменяем в тексте все небуквенные символы на пробелы
-    processed_book = re.sub('[\\W]+', ' ', raw).lower()
+    processed_book = re.sub(r'[\W]+', ' ', raw).lower()
 
     # считаем
     cnt = len(re.findall(word.lower(), processed_book))
@@ -97,34 +104,23 @@ def word_count(word, url=BOOK_PATH):
     return f"Cлово {word} встречается {cnt} раз"
 
 print(word_count('whole'))
-print(word_count('some'))
-
-def fib(n):
-    if n < 2:
-        return n
-    return fib(n-2) + fib(n-1)
+# print(word_count('some'))
 
 # измеряем время выполнения
 @benchmark
-def fib(n):
+def fib1(n):
     if n < 2:
         return n
-    return fib(n-2) + fib(n-1)
+    return fib1(n-2) + fib1(n-1)
 
-fib(randint(1, 10))
-
-@memo
-def fib(n):
-    if n < 2:
-        return n
-    return fib(n-2) + fib(n-1)
+print(fib1(8))
 
 # измеряем время выполнения
 @memo
 @benchmark
-def fib(n):
+def fib2(n):
     if n < 2:
         return n
-    return fib(n-2) + fib(n-1)
+    return fib2(n-2) + fib2(n-1)
 
-fib(randint(1, 10))
+print(fib2(8))
